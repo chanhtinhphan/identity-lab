@@ -1,14 +1,17 @@
 package com.springlab.identity_service.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    private int code=1000;
-    private String message;
-    private T result;
+    int code = 1000;
+    String message;
+    T result;
 }
