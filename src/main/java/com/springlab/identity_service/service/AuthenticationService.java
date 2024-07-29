@@ -37,7 +37,7 @@ public class AuthenticationService {
     UserRepository userRepository;
     @NonFinal
     @Value("${jwt.signerKey}")
-    protected String SIGNER_KEY;
+    private String SIGNER_KEY;
 
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
