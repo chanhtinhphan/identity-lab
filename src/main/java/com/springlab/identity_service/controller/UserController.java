@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,23 +31,32 @@ public class UserController {
     }
 
     @GetMapping
-    List<User> getUser() {
-        return userService.getUser();
+    ApiResponse<List<UserResponse>> getUsers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getUsers())
+                .build();
     }
 
     @GetMapping("/{id}")
-    UserResponse getUser(@PathVariable("id") String id) {
-        return userService.getUser(id);
+    ApiResponse<UserResponse> getUser(@PathVariable("id") String id) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getUser(id))
+                .build();
     }
 
     @PutMapping("{id}")
-    UserResponse updateUser(@PathVariable String id, @RequestBody UserUpdateRequest request) {
-        return userService.updateUser(id, request);
+    ApiResponse<UserResponse> updateUser(@PathVariable String id, @RequestBody UserUpdateRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updateUser(id, request))
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    String deteleUser(@PathVariable String id) {
+    ApiResponse<String> deteleUser(@PathVariable String id) {
         userService.deleteUser(id);
-        return "user has been deleted";
+        return ApiResponse.<String>builder()
+                .result("User has been deleted")
+                .build();
     }
 }
