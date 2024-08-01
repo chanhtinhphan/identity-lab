@@ -4,6 +4,7 @@ import com.nimbusds.jose.JOSEException;
 import com.springlab.identity_service.dto.request.AuthenticationRequest;
 import com.springlab.identity_service.dto.request.IntrospectRequest;
 import com.springlab.identity_service.dto.request.LogoutRequest;
+import com.springlab.identity_service.dto.request.RefreshRequest;
 import com.springlab.identity_service.dto.response.ApiResponse;
 import com.springlab.identity_service.dto.response.AuthenticationResponse;
 import com.springlab.identity_service.dto.response.IntrospectResponse;
@@ -39,6 +40,16 @@ public class AuthenticationController {
             throws ParseException, JOSEException {
         IntrospectResponse result = authenticationService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> refresh(@RequestBody RefreshRequest request)
+            throws ParseException, JOSEException {
+        AuthenticationResponse result = authenticationService.refreshToken(request);
+
+        return ApiResponse.<AuthenticationResponse>builder()
                 .result(result)
                 .build();
     }
