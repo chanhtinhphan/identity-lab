@@ -57,6 +57,7 @@ public class AuthenticationService {
 
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
+        System.out.println(SIGNER_KEY);
         String token = request.getToken();
         boolean isValid = true;
         try {

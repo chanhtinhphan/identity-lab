@@ -36,7 +36,7 @@ public class UserService {
 
     public UserResponse createUser(UserCreationRequest request) {
 //        if (userRepository.existsByUsername(request.getUsername()))
-//            throw new AppException(ErrorCode.USER_EXISTED);   concurrent request.
+//            throw new AppException(ErrorCode.USER_EXISTED);   not handle concurrent request.
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         HashSet<Role> roles = new HashSet<>();
