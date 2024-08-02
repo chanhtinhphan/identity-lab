@@ -4,7 +4,6 @@ import com.springlab.identity_service.dto.request.UserCreationRequest;
 import com.springlab.identity_service.dto.request.UserUpdateRequest;
 import com.springlab.identity_service.dto.response.ApiResponse;
 import com.springlab.identity_service.dto.response.UserResponse;
-import com.springlab.identity_service.entity.User;
 import com.springlab.identity_service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -24,10 +23,10 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    ApiResponse<User> creareUser(@RequestBody @Valid UserCreationRequest request) {
-        ApiResponse<User> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(userService.createUser(request));
-        return apiResponse;
+    ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.createUser(request))
+                .build();
     }
 
     @GetMapping

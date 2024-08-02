@@ -21,15 +21,18 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    private final String[] PUBLIC_ENPOINTS = {
-            "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
-    };
     @Value("${jwt.signerKey}")
     private String SIGNER_KEY;
 
-    @Autowired
-    private CustomJwtDecoder customJwtDecoder;
+    private static final String[] PUBLIC_ENPOINTS = {
+            "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+    };
+
+    private final CustomJwtDecoder customJwtDecoder;
+
+    public SecurityConfig(CustomJwtDecoder customJwtDecoder) {
+        this.customJwtDecoder = customJwtDecoder;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {

@@ -1,10 +1,11 @@
 package com.springlab.identity_service.service;
 
+import com.springlab.identity_service.constant.PredefinedRole;
 import com.springlab.identity_service.dto.request.UserCreationRequest;
 import com.springlab.identity_service.dto.request.UserUpdateRequest;
 import com.springlab.identity_service.dto.response.UserResponse;
+import com.springlab.identity_service.entity.Role;
 import com.springlab.identity_service.entity.User;
-import com.springlab.identity_service.enums.Role;
 import com.springlab.identity_service.exception.AppException;
 import com.springlab.identity_service.exception.ErrorCode;
 import com.springlab.identity_service.mapper.UserMapper;
@@ -13,6 +14,7 @@ import com.springlab.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
@@ -32,15 +34,21 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
 
-    public User createUser(UserCreationRequest request) {
-        if (userRepository.existsByUsername(request.getUsername()))
-            throw new AppException(ErrorCode.USER_EXISTED);
+    public UserResponse createUser(UserCreationRequest request) {
+//        if (userRepository.existsByUsername(request.getUsername()))
+//            throw new AppException(ErrorCode.USER_EXISTED);   concurrent request.
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        HashSet<String> roles = new HashSet<>();
-        roles.add(Role.USER.name());
-        //user.setRoles(roles);
-        return userRepository.save(user);
+        HashSet<Role> roles = new HashSet<>();
+        roleRepository.findById(PredefinedRole.USER_ROLE).ifPresent(role -> roles.add(role));
+        user.setRoles(roles);
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        return userMapper.toUserResponse(user);
     }
 
     public UserResponse getMyInfo() {
