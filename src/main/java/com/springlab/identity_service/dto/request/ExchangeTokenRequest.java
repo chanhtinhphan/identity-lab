@@ -1,5 +1,7 @@
 package com.springlab.identity_service.dto.request;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,6 +10,11 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LogoutRequest {
-    String token;
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class ExchangeTokenRequest {
+    String code;
+    String clientId;
+    String clientSecret;
+    String redirectUri;
+    String grantType;
 }

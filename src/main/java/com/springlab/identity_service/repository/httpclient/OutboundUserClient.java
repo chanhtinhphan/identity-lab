@@ -1,14 +1,13 @@
 package com.springlab.identity_service.repository.httpclient;
 
-import com.springlab.identity_service.dto.request.ExchangeTokenRequest;
-import com.springlab.identity_service.dto.response.ExchangeTokenResponse;
-import feign.QueryMap;
+import com.springlab.identity_service.dto.response.OutBoundUserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "outbound-identity", url = "https://oauth2.googleapis.com")
-public interface OutboundIdentityClient {
-    @PostMapping(value = "/token", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    ExchangeTokenResponse exchangeToken(@QueryMap ExchangeTokenRequest request);
+@FeignClient(name = "outbound-user-client", url = "https://www.googleapis.com")
+public interface OutboundUserClient {
+    @GetMapping(value = "/oauth2/v1/userinfo")
+    OutBoundUserResponse getUserInfo(@RequestParam("alt") String alt,
+                                     @RequestParam("access_token") String accessToken);
 }

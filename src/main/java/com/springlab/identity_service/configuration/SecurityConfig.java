@@ -27,7 +27,8 @@ public class SecurityConfig {
     private String SIGNER_KEY;
 
     private static final String[] PUBLIC_ENPOINTS = {
-            "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+            "/users", "/auth/token", "/auth/introspect", "/auth/logout",
+            "/auth/refresh", "/auth/outbound/authentication"
     };
 
     private final CustomJwtDecoder customJwtDecoder;

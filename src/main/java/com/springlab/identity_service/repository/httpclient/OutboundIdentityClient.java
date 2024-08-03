@@ -1,9 +1,8 @@
-package com.springlab.identity_service.repository;
+package com.springlab.identity_service.repository.httpclient;
 
 import com.springlab.identity_service.dto.request.ExchangeTokenRequest;
 import com.springlab.identity_service.dto.response.ExchangeTokenResponse;
 import feign.QueryMap;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;

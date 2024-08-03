@@ -1,5 +1,6 @@
 package com.springlab.identity_service.controller;
 
+import com.springlab.identity_service.dto.request.PasswordCreationRequest;
 import com.springlab.identity_service.dto.request.UserCreationRequest;
 import com.springlab.identity_service.dto.request.UserUpdateRequest;
 import com.springlab.identity_service.dto.response.ApiResponse;
@@ -63,6 +64,14 @@ public class UserController {
         userService.deleteUser(id);
         return ApiResponse.<String>builder()
                 .result("User has been deleted")
+                .build();
+    }
+
+    @PostMapping("/create-password")
+    ApiResponse<Void> createUser(@RequestBody @Valid PasswordCreationRequest request) {
+        userService.createPassword(request);
+        return ApiResponse.<Void>builder()
+                .message("Password has been created, you could use it to login")
                 .build();
     }
 

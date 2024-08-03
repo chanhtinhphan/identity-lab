@@ -1,6 +1,7 @@
 package com.springlab.identity_service.service;
 
 import com.springlab.identity_service.constant.PredefinedRole;
+import com.springlab.identity_service.dto.request.PasswordCreationRequest;
 import com.springlab.identity_service.dto.request.UserCreationRequest;
 import com.springlab.identity_service.dto.request.UserUpdateRequest;
 import com.springlab.identity_service.dto.response.UserResponse;
@@ -21,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -54,9 +56,13 @@ public class UserService {
     public UserResponse getMyInfo() {
         SecurityContext context = SecurityContextHolder.getContext();
         String username = context.getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return userMapper.toUserResponse(currentUser);
+
+        // for oauth2 (frontend use)
+        UserResponse userResponse = userMapper.toUserResponse(user);
+        userResponse.setNoPassword(!StringUtils.hasText(user.getPassword()));
+        return userResponse;
     }
 
     //    @PreAuthorize("hasRole('ADMIN')")
@@ -84,5 +90,17 @@ public class UserService {
 
     public void deleteUser(String id) {
         userRepository.deleteById(id);
+    }
+
+
+    public void createPassword(PasswordCreationRequest request) {
+        String username = getMyInfo().getUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (StringUtils.hasText(user.getPassword()))
+            throw new AppException(ErrorCode.PASSWORD_EXISTED);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
     }
 }

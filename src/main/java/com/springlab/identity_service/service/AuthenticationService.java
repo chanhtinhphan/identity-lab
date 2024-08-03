@@ -5,18 +5,20 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.springlab.identity_service.dto.request.AuthenticationRequest;
-import com.springlab.identity_service.dto.request.IntrospectRequest;
-import com.springlab.identity_service.dto.request.LogoutRequest;
-import com.springlab.identity_service.dto.request.RefreshRequest;
+import com.springlab.identity_service.constant.PredefinedRole;
+import com.springlab.identity_service.dto.request.*;
 import com.springlab.identity_service.dto.response.AuthenticationResponse;
+import com.springlab.identity_service.dto.response.ExchangeTokenResponse;
 import com.springlab.identity_service.dto.response.IntrospectResponse;
 import com.springlab.identity_service.entity.InvalidatedToken;
+import com.springlab.identity_service.entity.Role;
 import com.springlab.identity_service.entity.User;
 import com.springlab.identity_service.exception.AppException;
 import com.springlab.identity_service.exception.ErrorCode;
 import com.springlab.identity_service.repository.InvalidatedTokenRepository;
+import com.springlab.identity_service.repository.httpclient.OutboundIdentityClient;
 import com.springlab.identity_service.repository.UserRepository;
+import com.springlab.identity_service.repository.httpclient.OutboundUserClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,9 +33,7 @@ import org.springframework.util.CollectionUtils;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -42,6 +42,8 @@ import java.util.UUID;
 public class AuthenticationService {
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    OutboundIdentityClient outboundIdentityClient;
+    OutboundUserClient outboundUserClient;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -54,6 +56,22 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     private long REFRESHABLE_DURATION;
+
+    @NonFinal
+    @Value("${outbound.identity.client-id}")
+    private String CLIENT_ID;
+
+    @NonFinal
+    @Value("${outbound.identity.client-secret}")
+    private String CLIENT_SECRET;
+
+    @NonFinal
+    @Value("${outbound.identity.redirect-uri}")
+    private String REDIRECT_URI;
+
+    @NonFinal
+    private final String GRANT_TYPE = "authorization_code";
+
 
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
@@ -70,6 +88,38 @@ public class AuthenticationService {
                 .build();
     }
 
+    public AuthenticationResponse outboundAuthenticate(String code) {
+
+        ExchangeTokenResponse response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
+                .code(code)
+                .clientId(CLIENT_ID)
+                .clientSecret(CLIENT_SECRET)
+                .redirectUri(REDIRECT_URI)
+                .grantType(GRANT_TYPE)
+                .build());
+
+        var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+
+        log.info("User Info {}", userInfo);
+
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.builder().name(PredefinedRole.USER_ROLE).build());
+
+        User user = userRepository.findByUsername(userInfo.getEmail()).orElseGet(
+                () -> userRepository.save(User.builder()
+                        .username(userInfo.getEmail())
+                        .firstname(userInfo.getGivenName())
+                        .lastname(userInfo.getFamilyName())
+                        .roles(roles)
+                        .build()));
+
+        String token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -82,6 +132,7 @@ public class AuthenticationService {
                 .authenticated(true)
                 .build();
     }
+
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
         try {
@@ -120,8 +171,6 @@ public class AuthenticationService {
                 .authenticated(true)
                 .token(token)
                 .build();
-
-
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
@@ -176,5 +225,6 @@ public class AuthenticationService {
             });
         return stringJoiner.toString();
     }
+
 
 }
