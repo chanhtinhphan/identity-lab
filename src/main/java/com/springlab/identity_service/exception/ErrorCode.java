@@ -18,6 +18,7 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "Have no permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     PASSWORD_EXISTED(1009, "You already have a password", HttpStatus.BAD_REQUEST),
+    INVALID_SORT_FIELD(1010, "Invalid sort field", HttpStatus.BAD_REQUEST),
     ;
     private int code;
     private String message;

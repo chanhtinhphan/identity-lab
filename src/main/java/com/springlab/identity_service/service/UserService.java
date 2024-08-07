@@ -16,6 +16,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContext;
@@ -37,8 +41,6 @@ public class UserService {
     RoleRepository roleRepository;
 
     public UserResponse createUser(UserCreationRequest request) {
-//        if (userRepository.existsByUsername(request.getUsername()))
-//            throw new AppException(ErrorCode.USER_EXISTED);   not handle concurrent request.
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         HashSet<Role> roles = new HashSet<>();
@@ -51,6 +53,12 @@ public class UserService {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
         return userMapper.toUserResponse(user);
+    }
+
+    public Page<User> listByPage(int pageNum, int pageSize, String sortField) {
+        Sort sort = Sort.by(sortField).descending();
+        Pageable pageable = PageRequest.of(pageNum, pageSize, sort);
+        return userRepository.findAll(pageable);
     }
 
     public UserResponse getMyInfo() {
