@@ -22,6 +22,6 @@ jwt:
 outbound:
   identity:
     client-id: "412407094388-12f41ujg08dapvaskt1n7ge9tk23grhd.apps.googleusercontent.com"
-    client-secret: ""
+    client-secret:
     redirect-uri: "http://localhost:3000/authenticate"
 
